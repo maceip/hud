@@ -5,25 +5,25 @@ from '../../../tests/helpers'
 
 test.beforeEach(setupPptrTab)
 
-test('Should have guides as default tool', async t => {
+test('Should have resize as default tool', async t => {
   const { page } = t.context
-  t.is(await getActiveTool(page), 'guides')
+  t.is(await getActiveTool(page), 'resize')
   t.pass()
 })
 
-test('Should have 13 tools', async t => {
+test('Should have 3 tools', async t => {
   const { page } = t.context
   const tools = await page.evaluate(`document.querySelector('vis-bug').$shadow.querySelectorAll('ol:first-of-type > li').length`)
 
-  t.is(tools, 13)
+  t.is(tools, 3)
   t.pass()
 })
 
-test('Should have 13 key trainers', async t => {
+test('Should have 3 key trainers', async t => {
   const { page } = t.context
   const trainers = await page.evaluate(`document.querySelector('vis-bug').$shadow.querySelectorAll('visbug-hotkeys > *').length`)
 
-  t.is(trainers, 13)
+  t.is(trainers, 3)
   t.pass()
 })
 
