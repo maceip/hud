@@ -7,9 +7,7 @@ import {
 } from '../'
 
 import {
-  Selectable, Moveable, Padding, Margin, EditText, Font,
-  Flex, Search, ColorPicker, BoxShadow, HueShift, MetaTip,
-  Guides, Screenshot, Position, Accessibility, draggable
+  Selectable, Moveable, Resize, ColorPicker, draggable
 } from '../../features/'
 
 import {
@@ -20,7 +18,6 @@ import {
 
 import { VisBugModel }            from './model'
 import * as Icons                 from './vis-bug.icons'
-import { provideSelectorEngine }  from '../../features/search'
 import { PluginRegistry }         from '../../plugins/_registry'
 import {
   metaKey,
@@ -53,9 +50,7 @@ export default class VisBug extends HTMLElement {
     this.selectorEngine = Selectable(this)
     this.colorPicker    = ColorPicker(this.$shadow, this.selectorEngine)
 
-    provideSelectorEngine(this.selectorEngine)
-
-    this.toolSelected($('[data-tool="guides"]', this.$shadow)[0])
+    this.toolSelected($('[data-tool="resize"]', this.$shadow)[0])
   }
 
   disconnectedCallback() {
@@ -164,7 +159,7 @@ export default class VisBug extends HTMLElement {
       <ol constructible-support="${constructibleStylesheetSupport ? 'false':'true'}">
         ${Object.entries(this.toolbar_model).reduce((list, [key, tool]) => `
           ${list}
-          <li aria-label="${tool.label} Tool" aria-description="${tool.description}" aria-hotkey="${key}" data-tool="${tool.tool}" data-active="${key == 'g'}">
+          <li aria-label="${tool.label} Tool" aria-description="${tool.description}" aria-hotkey="${key}" data-tool="${tool.tool}" data-active="${key == 'r'}">
             ${tool.icon}
             ${this.demoTip({key, ...tool})}
           </li>
@@ -204,71 +199,21 @@ export default class VisBug extends HTMLElement {
       </aside>
     `
   }
+  resize() {
+    this.deactivate_feature = Resize(this.selectorEngine)
+  }
 
   move() {
     this.deactivate_feature = Moveable(this.selectorEngine)
   }
 
-  margin() {
-    this.deactivate_feature = Margin(this.selectorEngine)
-  }
-
-  padding() {
-    this.deactivate_feature = Padding(this.selectorEngine)
-  }
-
-  font() {
-    this.deactivate_feature = Font(this.selectorEngine)
-  }
-
-  text() {
-    this.selectorEngine.onSelectedUpdate(EditText)
-    this.deactivate_feature = () =>
-      this.selectorEngine.removeSelectedCallback(EditText)
-  }
-
-  align() {
-    this.deactivate_feature = Flex(this.selectorEngine)
-  }
-
-  search() {
-    this.deactivate_feature = Search($('[data-tool="search"]', this.$shadow))
-  }
-
-  boxshadow() {
-    this.deactivate_feature = BoxShadow(this.selectorEngine)
-  }
-
-  hueshift() {
-    this.deactivate_feature = HueShift({
-      Color:  this.colorPicker,
-      Visbug: this.selectorEngine,
+  clone() {
+    this.selectorEngine.selection().forEach(el => {
+      const deep_clone = el.cloneNode(true)
+      deep_clone.removeAttribute('data-selected')
+      el.parentNode.insertBefore(deep_clone, el.nextSibling)
     })
-  }
-
-  inspector() {
-    this.deactivate_feature = MetaTip(this.selectorEngine)
-  }
-
-  accessibility() {
-    this.deactivate_feature = Accessibility(this.selectorEngine)
-  }
-
-  guides() {
-    this.deactivate_feature = Guides(this.selectorEngine)
-  }
-
-  screenshot() {
-    this.deactivate_feature = Screenshot()
-  }
-
-  position() {
-    let feature = Position()
-    this.selectorEngine.onSelectedUpdate(feature.onNodesSelected)
-    this.deactivate_feature = () => {
-      this.selectorEngine.removeSelectedCallback(feature.onNodesSelected)
-      feature.disconnect()
-    }
+    this.deactivate_feature = () => {}
   }
 
   execCommand(command) {
